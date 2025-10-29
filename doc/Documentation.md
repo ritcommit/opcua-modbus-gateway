@@ -50,7 +50,6 @@ opcua-modbus-gateway/
 ├── CMakeLists.txt
 ├── README.md
 ├── include/
-|   |── open62541.h            # open6541 2 file SDK
 │   ├── gateway_config.h       # Config parsing structures
 │   ├── opcua_server.h         # OPC UA server logic
 │   ├── modbus_client.h        # Modbus RTU/TCP handling
@@ -58,7 +57,6 @@ opcua-modbus-gateway/
 │   └── utils.h                # Logging, helpers
 ├── src/
 │   ├── main.c                 # Entry point
-|   ├── open62541.c
 │   ├── gateway_config.c
 │   ├── opcua_server.c
 │   ├── modbus_client.c
@@ -74,4 +72,30 @@ opcua-modbus-gateway/
 
 ## 6. Tool and Dependencies
 
+### open62541
+
+#### Installation Steps
+
+```sh
+# install required packages
+sudo apt-get install git build-essential gcc pkg-config cmake python3
+
+# clone repository
+git clone https://github.com/open62541/open62541.git
+
+# build
+cd open62541/
+mkdir build
+cd build/
+
+# MinSizeRel builds with -Os optimization for minimal size
+# 600 is log level fatal, this reduces log messages and thus otuput size
+# hence build and application are fast
+cmake .. -DCMAKE_BUILD_TYPE=MinSizeRel -DUA_LOGLEVEL=600
+make
+sudo make install
+```
+
 ## 7. Future Enhancements
+
+

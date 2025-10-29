@@ -17,8 +17,10 @@ include_directories(${INC_DIR})
 # add_compile_options(-Wall -Wextra)
 
 # sources
-set(SRC_FILES ${SRC_DIR}/main.c ${SRC_DIR}/open62541.c)
+set(SRC_FILES ${SRC_DIR}/main.c)
 
 # executable
-add_executable(opcua_modbus_gateway ${SRC_FILES})
+add_executable(uamb_gateway ${SRC_FILES})
 
+find_package(open62541 REQUIRED)
+target_link_libraries(uamb_gateway open62541::open62541)

@@ -6,17 +6,21 @@ A lightweight, configurable gateway written in C that connects to Modbus RTU/TCP
 - Modbus TCP and RTU support
 - Configurable mapping between Modbus registers and OPC UA nodes
 - Works cross-platform (Linux, Windows, embedded Linux)
-- Lightweight and dependency-minimal
+- Lightweight and fast connection
 
 ## Getting Started
 ### Prerequisites
 - CMake >= 3.10
-- GCC/Clang
-- [libmodbus](https://libmodbus.org/) installed (or use third_party build)
-- [open62541 two-file release](https://open62541.org/)
+- GCC
+- [libmodbus](https://libmodbus.org/)
+- [open62541](https://open62541.org/)
+- UaExpert or similar OPC-UA client application for testing and demonstration
 
 ### Build
 ```bash
-mkdir build && cd build
+mkdir build
+cd build
 cmake ..
-cmake --build .
+make
+./uamb_gateway
+```

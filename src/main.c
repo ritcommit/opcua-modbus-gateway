@@ -1,38 +1,20 @@
+/**
+ * Part of opcua-modbus-gateway project subjected to terms of
+ * MIT license agreement. A license file is distributed with
+ * the project. 
+ * @Author: Ritesh Sharma
+ * @Date: 30-10-2025
+ * @Detail: entry point of the application
+ */
+
 #include <stdio.h>
-#include <signal.h>
-#include "open62541.h"
+#include <open62541/server.h>
 
 #define OPCUA_ENDPOINT "opc.tcp://localhost:4840"
 
-static volatile UA_Boolean running = true;
-
-static void stop_handler(int sig)
-{
-	(void)sig;
-	running = false;
-}
-
 void run_server(void)
 {
-	signal(SIGINT, stop_handler);
-	signal(SIGTERM, stop_handler);
-
-	UA_Server *server = UA_Server_new();
-	UA_ServerConfig_setDefault(UA_Server_getConfig(server));
-
-	printf("OPC UA server running at %s\n", OPCUA_ENDPOINT);
-	UA_StatusCode status = UA_Server_run(server, &running);
-
-	UA_Server_delete(server);
-	if(status != UA_STATUSCODE_GOOD)
-	{
-		fprintf(stderr, "Server exited with status: %s\n", UA_StatusCode_name(status));
-	}
-}
-
-void run_server_variable(void)
-{
-	/* Create a server listening on port 4840 (default) */
+    /* Create a server listening on port 4840 (default) */
     UA_Server *server = UA_Server_new();
 
     /* Add a variable node to the server */
@@ -60,11 +42,10 @@ void run_server_variable(void)
 
     /* Clean up */
     UA_Server_delete(server);
-    //return status == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 int main(void)
 {
-	run_server_variable();
+	run_server();
 	return 0;
 }

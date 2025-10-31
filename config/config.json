@@ -1,0 +1,28 @@
+{
+    "modbus": {
+        "type": "rtu",
+        "address": "/dev/ttyUSB0",
+        "port": 502,
+        "slave_id": 1
+    },
+    "opcua": {
+        "endpoint": "opc.tcp://localhost:4840",
+        "security_policy": "None"
+    },
+    "data": [
+        {
+            "mb_addr": 40001,
+            "type": "holding_register",
+            "ua_nodeid": "ns=2;s=Temperature",
+            "datatype": "float",
+            "scaling": 0.1
+        },
+        {
+            "mb_addr": 40002,
+            "type": "holding_register",
+            "ua_nodeid": "ns=2;s=Pressure",
+            "datatype": "float",
+            "scaling": 1
+        }
+    ]
+}

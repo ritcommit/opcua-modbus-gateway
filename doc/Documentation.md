@@ -107,6 +107,7 @@ cd libmodbus/
 ./autogen.sh
 ./configure
 sudo make install
+sudo ldconfig
 ```
 ### cJson Parser
 #### Installation Steps
@@ -116,10 +117,9 @@ git clone https://github.com/DaveGamble/cJSON.git
 cd cJson/
 mkdir build
 cd build/
-cmake .. cmake .. -DENABLE_CJSON_TEST=Off
+cmake .. -DENABLE_CJSON_TEST=Off
 make
 sudo make install
-sudo ldconfig
 ```
 
 ## 7. Future Enhancements

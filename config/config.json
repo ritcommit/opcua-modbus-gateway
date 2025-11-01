@@ -2,7 +2,8 @@
     "modbus": {
         "type": "rtu",
         "address": "/dev/ttyUSB0",
-        "port": 502,
+        "baudrate": 9600,
+        "parity": "N",
         "slave_id": 1
     },
     "opcua": {

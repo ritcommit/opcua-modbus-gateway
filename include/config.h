@@ -12,4 +12,39 @@
 
 #include <cjson/cJSON.h>
 
+typedef struct {
+    char opcua_endpoint[256];
+    char opcua_securitypolicy[64];
+    char modbus_type[16];
+    char modbus_address[128];
+    int modbus_port;
+    int modbus_baudrate;
+    char modbus_parity[8];
+    int modbus_slaveid;
+} gateway_config_t;
+
+typedef enum {
+    MODBUS_TYPE_TCP,
+    MODBUS_TYPE_RTU
+} modbus_type_t;
+
+typedef enum {
+    PARSE_ERROR_NONE = 0,
+    PARSE_ERROR_OPCUA_CONFIG = 1,
+    PARSE_ERROR_NULL_CONFIG = 2,
+    PARSE_ERROR_OPCUA_ENDPOINT = 3,
+    PARSE_ERROR_OPCUA_SECURITYPOLICY = 4,
+    PARSE_ERROR_MODBUS_CONFIG = 5,
+    PARSE_ERROR_MODBUS_TYPE = 6,
+    PARSE_ERROR_MODBUS_BAUDRATE = 7,
+    PARSE_ERROR_MODBUS_PARITY = 8,
+    PARSE_ERROR_MODBUS_ADDRESS = 9,
+    PARSE_ERROR_MODBUS_PORT = 10,
+    PARSE_ERROR_MODBUS_SLAVEID = 11
+} parse_error_t;
+
+void load_configuration(const char *filename, cJSON **config_json);
+parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *config);
+void free_configuration(cJSON *config_json);
+
 #endif /*GWY_CONFIG_H*/

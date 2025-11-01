@@ -23,4 +23,4 @@ file(GLOB SRC_FILES "${SRC_DIR}/*.c")
 add_executable(uamb_gateway ${SRC_FILES})
 
 find_package(open62541 REQUIRED)
-target_link_libraries(uamb_gateway open62541::open62541 modbus)
+target_link_libraries(uamb_gateway open62541::open62541 modbus cjson)

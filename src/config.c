@@ -51,12 +51,12 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
 
     cJSON *opcua_config = cJSON_GetObjectItemCaseSensitive(config_json, "opcua");
     if (cJSON_IsObject(opcua_config)) {
-        cJSON *endpoint = cJSON_GetObjectItemCaseSensitive(opcua_config, "endpoint");
+        cJSON *opcua_port = cJSON_GetObjectItemCaseSensitive(opcua_config, "port");
         cJSON *security_policy = cJSON_GetObjectItemCaseSensitive(opcua_config, "security_policy");
-        if (cJSON_IsString(endpoint) && (endpoint->valuestring != NULL)) {
-            strcpy(cfg->opcua_endpoint, endpoint->valuestring);
+        if (cJSON_IsNumber(opcua_port)) {
+            cfg->opcua_port = opcua_port->valueint;
         } else {
-            error = PARSE_ERROR_OPCUA_ENDPOINT;
+            error = PARSE_ERROR_OPCUA_PORT;
         }
         if (cJSON_IsString(security_policy) && (security_policy->valuestring != NULL)) {
             strcpy(cfg->opcua_securitypolicy, security_policy->valuestring);
@@ -64,7 +64,7 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
             error = PARSE_ERROR_OPCUA_SECURITYPOLICY;
         }
     } else {
-        error = PARSE_ERROR_OPCUA_ENDPOINT;
+        error = PARSE_ERROR_OPCUA_CONFIG;
     }
 
     cJSON *modbus_config = cJSON_GetObjectItemCaseSensitive(config_json, "modbus");

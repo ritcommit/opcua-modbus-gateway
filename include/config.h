@@ -13,7 +13,7 @@
 #include <cjson/cJSON.h>
 
 typedef struct {
-    char opcua_endpoint[256];
+    int opcua_port;
     char opcua_securitypolicy[64];
     char modbus_type[16];
     char modbus_address[128];
@@ -32,7 +32,7 @@ typedef enum {
     PARSE_ERROR_NONE = 0,
     PARSE_ERROR_OPCUA_CONFIG = 1,
     PARSE_ERROR_NULL_CONFIG = 2,
-    PARSE_ERROR_OPCUA_ENDPOINT = 3,
+    PARSE_ERROR_OPCUA_PORT = 3,
     PARSE_ERROR_OPCUA_SECURITYPOLICY = 4,
     PARSE_ERROR_MODBUS_CONFIG = 5,
     PARSE_ERROR_MODBUS_TYPE = 6,

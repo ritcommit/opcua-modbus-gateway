@@ -7,7 +7,7 @@
         "slave_id": 1
     },
     "opcua": {
-        "endpoint": "opc.tcp://localhost:4840",
+        "port": 4841,
         "security_policy": "None"
     },
     "data": [

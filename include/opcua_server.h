@@ -10,6 +10,7 @@
 #define GWY_OPCUA_SERVER_H
 
 #include <open62541/server.h>
+#include <open62541/server_config_default.h>
 
 void init_opcua_server(UA_Server **server);
 void run_opcua_server(UA_Server *server);

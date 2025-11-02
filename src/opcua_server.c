@@ -6,13 +6,18 @@
  * @Date: 31-10-2025
  * @Detail: opcua server implementation
  */
-
+#include "config.h"
 #include "opcua_server.h"
+
+extern gateway_config_t config;
 
 void init_opcua_server(UA_Server **server)
 {
     /* Create a server listening on port 4840 (default) */
     *server = UA_Server_new();
+    UA_ServerConfig *ua_server_config = UA_Server_getConfig(*server);
+    UA_UInt16 port = (config.opcua_port != 0) ? config.opcua_port : 4840;
+    UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
 }
 
 void run_opcua_server(UA_Server *server)

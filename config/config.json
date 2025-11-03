@@ -3,12 +3,12 @@
         "type": "rtu",
         "address": "/dev/ttyUSB0",
         "baudrate": 9600,
-        "parity": "N",
+        "parity": "none",
         "slave_id": 1
     },
     "opcua": {
         "port": 4841,
-        "security_policy": "None"
+        "security_policy": "none"
     },
     "data": [
         {

@@ -10,11 +10,30 @@
 #include <errno.h>
 #include "modbus_client.h"
 
-modbus_t* init_modbus_client(const char* device, int baud, char parity, int data_bit, int stop_bit)
+#define MODBUS_DATA_BITS 8
+#define MODBUS_STOP_BITS 1
+
+modbus_t* init_modbus_client(gateway_config_t cfg)
 {
-    modbus_t *ctx = modbus_new_rtu(device, baud, parity, data_bit, stop_bit);
+    modbus_t *ctx = NULL;
+    if (MODBUS_TYPE_RTU == cfg.modbus_type)
+    {
+        ctx = modbus_new_rtu(cfg.modbus_address, cfg.modbus_baudrate, cfg.modbus_parity, MODBUS_DATA_BITS, MODBUS_STOP_BITS);
+    }
+    else if (MODBUS_TYPE_TCP == cfg.modbus_type)
+    {
+        ctx = modbus_new_tcp(cfg.modbus_address, cfg.modbus_port);
+    }
+
     if (ctx == NULL) {
         fprintf(stderr, "Unable to allocate libmodbus context\n");
+        return NULL;
+    }
+
+    int res = modbus_set_slave(ctx, cfg.modbus_slaveid);
+    if (res == -1) {
+        fprintf(stderr, "Invalid slave ID\n");
+        modbus_free(ctx);
         return NULL;
     }
 

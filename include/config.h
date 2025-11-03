@@ -12,21 +12,22 @@
 
 #include <cjson/cJSON.h>
 
+typedef enum {
+    MODBUS_TYPE_NONE=0,
+    MODBUS_TYPE_RTU=1,
+    MODBUS_TYPE_TCP=2,
+} modbus_type_t;
+
 typedef struct {
     int opcua_port;
     char opcua_securitypolicy[64];
-    char modbus_type[16];
+    modbus_type_t modbus_type;
     char modbus_address[128];
     int modbus_port;
     int modbus_baudrate;
-    char modbus_parity[8];
+    char modbus_parity;
     int modbus_slaveid;
 } gateway_config_t;
-
-typedef enum {
-    MODBUS_TYPE_TCP,
-    MODBUS_TYPE_RTU
-} modbus_type_t;
 
 typedef enum {
     PARSE_ERROR_NONE = 0,

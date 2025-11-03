@@ -74,8 +74,8 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
         cJSON *slave_id = cJSON_GetObjectItemCaseSensitive(modbus_config, "slave_id");
 
         if (cJSON_IsString(type) && (type->valuestring != NULL)) {
-            strcpy(cfg->modbus_type, type->valuestring);
             if (strcmp(type->valuestring, "tcp") == 0) {
+                cfg->modbus_type = MODBUS_TYPE_TCP;
                 cJSON *port = cJSON_GetObjectItemCaseSensitive(modbus_config, "port");
                 if (cJSON_IsNumber(port)) {
                     cfg->modbus_port = port->valueint;
@@ -84,6 +84,7 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
                 }
             }
             else if (strcmp(type->valuestring, "rtu") == 0) {
+                cfg->modbus_type = MODBUS_TYPE_RTU;
                 cJSON *baudrate = cJSON_GetObjectItemCaseSensitive(modbus_config, "baudrate");
                 cJSON *parity = cJSON_GetObjectItemCaseSensitive(modbus_config, "parity");
                 if (cJSON_IsNumber(baudrate)) {
@@ -92,12 +93,25 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
                     error = PARSE_ERROR_MODBUS_BAUDRATE;
                 }
                 if (cJSON_IsString(parity) && (parity->valuestring != NULL)) {
-                    strcpy(cfg->modbus_parity, parity->valuestring);
+                    if (strcmp(parity->valuestring, "odd") == 0)
+                    {
+                        cfg->modbus_parity = 'O';
+                    }
+                    else if (strcmp(parity->valuestring, "even") == 0)
+                    {
+                        cfg->modbus_parity = 'E';
+                    }
+                    else
+                    {
+                        cfg->modbus_parity = 'N';
+                    }
+
                 } else {
                     error = PARSE_ERROR_MODBUS_PARITY;
                 }
             }
             else {
+                cfg->modbus_type = MODBUS_TYPE_NONE;
                 error = PARSE_ERROR_MODBUS_TYPE;
             }
         } else {

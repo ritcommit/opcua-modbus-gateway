@@ -33,6 +33,9 @@ int main(void)
     /* Initialize the OPC UA server */
     init_opcua_server(&server);
 
+    /* Add a variable node */
+    add_variable_node(server);
+
     /* Run the OPC UA server */
     run_opcua_server(server);
 

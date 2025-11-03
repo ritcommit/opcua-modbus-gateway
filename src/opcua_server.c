@@ -24,6 +24,18 @@ void run_opcua_server(UA_Server *server)
 {
     /* Add a variable node to the server */
 
+    /* Run the server (until ctrl-c interrupt) */
+    UA_StatusCode status = UA_Server_runUntilInterrupt(server);
+}
+
+void cleanup_opcua_server(UA_Server *server)
+{
+    /* Clean up */
+    UA_Server_delete(server);
+}
+
+void add_variable_node(UA_Server *server)
+{
     /* 1) Define the variable attributes */
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.displayName = UA_LOCALIZEDTEXT("en-US", "the answer");
@@ -41,13 +53,4 @@ void run_opcua_server(UA_Server *server)
     UA_Server_addVariableNode(server, newNodeId, parentNodeId,
                               parentReferenceNodeId, browseName,
                               variableType, attr, NULL, NULL);
-
-    /* Run the server (until ctrl-c interrupt) */
-    UA_StatusCode status = UA_Server_runUntilInterrupt(server);
-}
-
-void cleanup_opcua_server(UA_Server *server)
-{
-    /* Clean up */
-    UA_Server_delete(server);
 }

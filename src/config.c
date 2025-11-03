@@ -13,6 +13,8 @@
 #include <cjson/cJSON.h>
 #include "config.h"
 
+data_config_t* gwy_data = NULL;
+
 void load_configuration(const char *filename, cJSON **config_json)
 {
     FILE *file = fopen(filename, "r");
@@ -129,6 +131,25 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
         }
     } else {
         error = PARSE_ERROR_MODBUS_CONFIG;
+    }
+
+    cJSON *data_configs = cJSON_GetObjectItemCaseSensitive(config_json, "data");
+    if (cJSON_IsObject(data_configs) && cJSON_IsArray(data_configs)) {
+        cfg->data_cfg_size = cJSON_GetArraySize(data_configs);
+        gwy_data = (data_config_t*)calloc(cfg->data_cfg_size, sizeof(data_config_t));
+        cJSON *data_config = NULL;
+        cJSON_ArrayForEach(data_config, data_configs)
+        {
+            cJSON *mb_addr = cJSON_GetObjectItemCaseSensitive(data_config, "mb_addr");
+            cJSON *mb_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dtype");
+            cJSON *mb_dlen = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dlen");
+            cJSON *ua_nodeid = cJSON_GetObjectItemCaseSensitive(data_config, "ua_nodeid");
+            cJSON *ua_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "ua_dtype");
+            cJSON *d_scale = cJSON_GetObjectItemCaseSensitive(data_config, "d_scale");
+        }
+    }
+    else{
+        error = PARSE_ERROR_DATA_CONFIG;
     }
     return error;
 }

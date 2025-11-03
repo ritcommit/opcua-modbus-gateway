@@ -15,5 +15,6 @@
 void init_opcua_server(UA_Server **server);
 void run_opcua_server(UA_Server *server);
 void cleanup_opcua_server(UA_Server *server);
+void add_variable_node(UA_Server *server);
 
 #endif /*GWY_OPCUA_SERVER_H*/

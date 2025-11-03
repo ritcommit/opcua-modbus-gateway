@@ -14,7 +14,7 @@ A lightweight, configurable gateway written in C that connects to Modbus RTU/TCP
 - GCC
 - [libmodbus](https://libmodbus.org/)
 - [open62541](https://open62541.org/)
-- UaExpert or similar OPC-UA client application for testing and demonstration
+- [UaExpert](https://www.unified-automation.com/products/development-tools/uaexpert.html) or similar OPC-UA client application for testing and demonstration
 
 ### Build
 ```bash

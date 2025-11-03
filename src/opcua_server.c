@@ -6,19 +6,36 @@
  * @Date: 31-10-2025
  * @Detail: opcua server implementation
  */
-
+#include "config.h"
 #include "opcua_server.h"
+
+extern gateway_config_t config;
 
 void init_opcua_server(UA_Server **server)
 {
     /* Create a server listening on port 4840 (default) */
     *server = UA_Server_new();
+    UA_ServerConfig *ua_server_config = UA_Server_getConfig(*server);
+    UA_UInt16 port = (config.opcua_port != 0) ? config.opcua_port : 4840;
+    UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
 }
 
 void run_opcua_server(UA_Server *server)
 {
     /* Add a variable node to the server */
 
+    /* Run the server (until ctrl-c interrupt) */
+    UA_StatusCode status = UA_Server_runUntilInterrupt(server);
+}
+
+void cleanup_opcua_server(UA_Server *server)
+{
+    /* Clean up */
+    UA_Server_delete(server);
+}
+
+void add_variable_node(UA_Server *server)
+{
     /* 1) Define the variable attributes */
     UA_VariableAttributes attr = UA_VariableAttributes_default;
     attr.displayName = UA_LOCALIZEDTEXT("en-US", "the answer");
@@ -36,13 +53,4 @@ void run_opcua_server(UA_Server *server)
     UA_Server_addVariableNode(server, newNodeId, parentNodeId,
                               parentReferenceNodeId, browseName,
                               variableType, attr, NULL, NULL);
-
-    /* Run the server (until ctrl-c interrupt) */
-    UA_StatusCode status = UA_Server_runUntilInterrupt(server);
-}
-
-void cleanup_opcua_server(UA_Server *server)
-{
-    /* Clean up */
-    UA_Server_delete(server);
 }

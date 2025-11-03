@@ -11,9 +11,9 @@
 #define GWY_MODBUS_CLIENT_H
 
 #include <modbus/modbus.h>
+#include "config.h"
 
-modbus_t* init_modbus_client(const char* device, int baud, \
-    char parity, int data_bit, int stop_bit);
+modbus_t* init_modbus_client(gateway_config_t);
 void close_modbus_client(modbus_t* ctx);
 
 #endif /*GWY_MODBUS_CLIENT_H*/

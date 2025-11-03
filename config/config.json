@@ -2,27 +2,30 @@
     "modbus": {
         "type": "rtu",
         "address": "/dev/ttyUSB0",
-        "port": 502,
+        "baudrate": 9600,
+        "parity": "none",
         "slave_id": 1
     },
     "opcua": {
-        "endpoint": "opc.tcp://localhost:4840",
-        "security_policy": "None"
+        "port": 4841,
+        "security_policy": "none"
     },
     "data": [
         {
-            "mb_addr": 40001,
-            "type": "holding_register",
+            "mb_register": 40001,
+            "mb_dtype": "HR",
+            "mb_dlen": 2,
             "ua_nodeid": "ns=2;s=Temperature",
-            "datatype": "float",
-            "scaling": 0.1
+            "ua_dtype": "float",
+            "scaling_factor": 0.1
         },
         {
-            "mb_addr": 40002,
-            "type": "holding_register",
+            "mb_register": 40008,
+            "mb_dtype": "HR",
+            "mb_dlen": 2,
             "ua_nodeid": "ns=2;s=Pressure",
-            "datatype": "float",
-            "scaling": 1
+            "ua_dtype": "float",
+            "scaling_factor": 1
         }
     ]
 }

@@ -30,6 +30,13 @@ int main(void)
         return -1;
     }
     
+    printf("Data:\n");
+    for (int i=0; i<config.data_cfg_size; i++)
+    {
+        printf("[%d]\tAddr: %d\t NodeID: %s\n", (i+1), \
+            config.data_cfg[i].modbus_reg, config.data_cfg[i].opcua_nodeid);
+    }
+
     /* Initialize the OPC UA server */
     init_opcua_server(&server);
 

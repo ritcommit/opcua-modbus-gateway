@@ -20,7 +20,7 @@
             "scaling_factor": 0.1
         },
         {
-            "mb_register": 40002,
+            "mb_register": 40008,
             "mb_dtype": "HR",
             "mb_dlen": 2,
             "ua_nodeid": "ns=2;s=Pressure",

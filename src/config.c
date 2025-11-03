@@ -134,21 +134,91 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
     }
 
     cJSON *data_configs = cJSON_GetObjectItemCaseSensitive(config_json, "data");
-    if (cJSON_IsObject(data_configs) && cJSON_IsArray(data_configs)) {
+    if (cJSON_IsArray(data_configs)) {
         cfg->data_cfg_size = cJSON_GetArraySize(data_configs);
         gwy_data = (data_config_t*)calloc(cfg->data_cfg_size, sizeof(data_config_t));
+        if (gwy_data == NULL) {
+            error = PARSE_ERROR_DATA_CALLOC;
+            return error;
+        }
+        
         cJSON *data_config = NULL;
-        cJSON_ArrayForEach(data_config, data_configs)
-        {
-            cJSON *mb_addr = cJSON_GetObjectItemCaseSensitive(data_config, "mb_addr");
+        int index = 0;
+        cJSON_ArrayForEach(data_config, data_configs) {
+            cJSON *mb_addr = cJSON_GetObjectItemCaseSensitive(data_config, "mb_register");
             cJSON *mb_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dtype");
             cJSON *mb_dlen = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dlen");
             cJSON *ua_nodeid = cJSON_GetObjectItemCaseSensitive(data_config, "ua_nodeid");
             cJSON *ua_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "ua_dtype");
-            cJSON *d_scale = cJSON_GetObjectItemCaseSensitive(data_config, "d_scale");
+            cJSON *d_scale = cJSON_GetObjectItemCaseSensitive(data_config, "scaling_factor");
+            
+            if (cJSON_IsNumber(mb_addr)) {
+                gwy_data[index].modbus_reg = mb_addr->valueint;
+            } else {
+                error = PARSE_ERROR_DATA_MB_ADDR;
+                break;
+            }
+            if (cJSON_IsString(mb_dtype) && mb_dtype->valuestring != NULL) {
+                if (strcmp(mb_dtype->valuestring, "HR") == 0)
+                {
+                    gwy_data[index].modbus_datatype = MODBUS_DTYPE_HR;
+                }
+                else if (strcmp(mb_dtype->valuestring, "IR") == 0)
+                {
+                    gwy_data[index].modbus_datatype = MODBUS_DTYPE_IR;
+                }
+                else if (strcmp(mb_dtype->valuestring, "OC") == 0)
+                {
+                    gwy_data[index].modbus_datatype = MODBUS_DTYPE_OC;
+                }
+                else if (strcmp(mb_dtype->valuestring, "DI") == 0)
+                {
+                    gwy_data[index].modbus_datatype = MODBUS_DTYPE_DI;
+                }
+                else
+                {
+                    gwy_data[index].modbus_datatype = MODBUS_DTYPE_ERR;
+                }
+            } else {
+                error = PARSE_ERROR_DATA_MB_DTYPE;
+                break;
+            }
+            if (cJSON_IsNumber(mb_dlen)) {
+                gwy_data[index].modbus_datalen = mb_dlen->valueint;
+            } else {
+                error = PARSE_ERROR_DATA_MB_DLEN;
+                break;
+            }
+            if (cJSON_IsString(ua_nodeid) && ua_nodeid->valuestring != NULL) {
+                strcpy(gwy_data[index].opcua_nodeid, ua_nodeid->valuestring);
+            } else {
+                error = PARSE_ERROR_DATA_UA_NODEID;
+                break;
+            }
+            if (cJSON_IsString(ua_dtype) && ua_dtype->valuestring != NULL) {
+                strcpy(gwy_data[index].opcua_datatype, ua_dtype->valuestring);
+            } else {
+                error = PARSE_ERROR_DATA_UA_DTYPE;
+                break;
+            }
+            if (cJSON_IsNumber(d_scale)) {
+                gwy_data[index].scalingfactor = d_scale->valuedouble;
+            } else {
+                error = PARSE_ERROR_DATA_SCALE;
+                break;
+            }
+            index++;
+        }
+        
+        if (error != PARSE_ERROR_NONE) {
+            free(gwy_data);
+            gwy_data = NULL;
+        }
+        else{
+            cfg->data_cfg = gwy_data;
         }
     }
-    else{
+    else {
         error = PARSE_ERROR_DATA_CONFIG;
     }
     return error;

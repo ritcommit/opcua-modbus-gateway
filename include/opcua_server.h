@@ -11,10 +11,11 @@
 
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
+#include "config.h"
 
-void init_opcua_server(UA_Server **server);
+void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg);
 void run_opcua_server(UA_Server *server);
 void cleanup_opcua_server(UA_Server *server);
-void add_variable_node(UA_Server *server);
+UA_StatusCode add_variable_node(UA_Server *server,  data_config_t data_cfg);
 
 #endif /*GWY_OPCUA_SERVER_H*/

@@ -11,10 +11,9 @@
 #include "opcua_server.h"
 #include "config.h"
 
-gateway_config_t config;
-
 int main(void)
 {
+    gateway_config_t config;
     UA_Server *server = NULL;   
     cJSON *config_json = NULL;
     load_configuration("../config/config.json", &config_json);
@@ -30,18 +29,18 @@ int main(void)
         return -1;
     }
     
-    printf("Data:\n");
+    /* Initialize the OPC UA server */
+    init_opcua_server(&server, config);
+
     for (int i=0; i<config.data_cfg_size; i++)
     {
-        printf("[%d]\tAddr: %d\t NodeID: %s\n", (i+1), \
-            config.data_cfg[i].modbus_reg, config.data_cfg[i].opcua_nodeid);
+        /* Add a variable node */
+        UA_StatusCode add_node_error = add_variable_node(server, config.data_cfg[i]);
+        if (UA_STATUSCODE_GOOD != add_node_error)
+        {
+            printf("Failed to add UA node. [%s] ERROR [%d]\n", config.data_cfg[i].opcua_nodeid, (int)add_node_error);
+        }
     }
-
-    /* Initialize the OPC UA server */
-    init_opcua_server(&server);
-
-    /* Add a variable node */
-    add_variable_node(server);
 
     /* Run the OPC UA server */
     run_opcua_server(server);

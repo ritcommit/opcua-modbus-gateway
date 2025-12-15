@@ -6,29 +6,38 @@
  * @Date: 31-10-2025
  * @Detail: opcua server implementation
  */
+/*********************INCLUDES**********************/
 #include <stdio.h>
 #include <string.h>
 #include "config.h"
 #include "opcua_server.h"
 
+/************TYPEDEFS, STRUCTS, ENUMS***************/
 typedef enum{
     DTYPE_INT,
     DTYPE_FLOAT,
     DTYPE_MAX
 }dtype_t;
 
-const char dtype_str[DTYPE_MAX][12]= {
-    "int",
-    "float",
-};
-
 typedef struct{
     int i;
     float f;
 } default_t;
 
+/*****************LOCAL VARIABLES*******************/
+const char dtype_str[DTYPE_MAX][12]= {
+    "int",
+    "float",
+};
+
 default_t df = {.i=42, .f=42.24f};
 
+/************LOCAL FUNCTION PROTOTYPES**************/
+static UA_NodeId parseNodeId(char *nodeidStr);
+static void get_default_value(void** init_val, UA_DataType** ua_dtype, const char* cfg_dtype);
+static void update_data(UA_Server *server, void *data);
+
+/****************GLOBAL FUNCTIONS*******************/
 void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
 {
     /* Create a server listening on given port or 4840 (default) */
@@ -38,8 +47,14 @@ void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
     UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
 }
 
-void run_opcua_server(UA_Server *server)
+void run_opcua_server(UA_Server *server, gateway_config_t* gwy_cfg)
 {
+    UA_Server_addRepeatedCallback(
+        server,
+        update_data,
+        (void*)gwy_cfg,
+        1000,      // 1 second
+        NULL);
     /* Run the server (until ctrl-c interrupt) */
     UA_StatusCode status = UA_Server_runUntilInterrupt(server);
 }
@@ -48,46 +63,6 @@ void cleanup_opcua_server(UA_Server *server)
 {
     /* Clean up */
     UA_Server_delete(server);
-}
-
-static UA_NodeId parseNodeId(char *nodeidStr) {
-    UA_NodeId nodeId;
-    UA_StatusCode ret = UA_NodeId_parse(&nodeId, UA_STRING(nodeidStr));
-    if(ret != UA_STATUSCODE_GOOD) {
-        printf("Error parsing NodeId string %s\n", nodeidStr);
-        return UA_NODEID_NULL;
-    }
-    return nodeId;
-}
-
-void get_default_value(void** init_val, UA_DataType** ua_dtype, const char* cfg_dtype)
-{
-    dtype_t dtype = DTYPE_INT;
-    while (dtype<DTYPE_MAX)
-    {
-        if (!strcmp(dtype_str[dtype], cfg_dtype))
-        {
-            break;
-        }
-        dtype += 1;
-    }
-
-    switch (dtype)
-    {
-        case DTYPE_INT:
-            *init_val = &df.i;
-            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
-            break; 
-        case DTYPE_FLOAT:
-            *init_val = &df.f;
-            *ua_dtype = &UA_TYPES[UA_TYPES_FLOAT];
-            break;  
-        case DTYPE_MAX:
-        default:
-            *init_val = &df.i;
-            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
-            break; 
-    }
 }
 
 /* Function to add a node */
@@ -120,7 +95,7 @@ UA_StatusCode add_variable_node(UA_Server *server,
     UA_StatusCode status = UA_Server_addVariableNode(
         server,
         newNodeId,                 /* requested NodeId */
-        parentNodeId,             /* parent folder */
+        parentNodeId,              /* parent folder */
         parentReferenceNodeId,
         browseName,
         variableType,
@@ -135,4 +110,67 @@ UA_StatusCode add_variable_node(UA_Server *server,
     }
 
     return status;
+}
+
+/*****************LOCAL FUNCTIONS*******************/
+static UA_NodeId parseNodeId(char *nodeidStr) {
+    UA_NodeId nodeId;
+    UA_StatusCode ret = UA_NodeId_parse(&nodeId, UA_STRING(nodeidStr));
+    if(ret != UA_STATUSCODE_GOOD) {
+        printf("Error parsing NodeId string %s\n", nodeidStr);
+        return UA_NODEID_NULL;
+    }
+    return nodeId;
+}
+
+static void get_default_value(void** init_val, UA_DataType** ua_dtype, const char* cfg_dtype)
+{
+    dtype_t dtype = DTYPE_INT;
+    while (dtype<DTYPE_MAX)
+    {
+        if (!strcmp(dtype_str[dtype], cfg_dtype))
+        {
+            break;
+        }
+        dtype += 1;
+    }
+
+    switch (dtype)
+    {
+        case DTYPE_INT:
+            *init_val = &df.i;
+            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
+            break; 
+        case DTYPE_FLOAT:
+            *init_val = &df.f;
+            *ua_dtype = &UA_TYPES[UA_TYPES_FLOAT];
+            break;  
+        case DTYPE_MAX:
+        default:
+            *init_val = &df.i;
+            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
+            break; 
+    }
+}
+
+static void update_data(UA_Server *server, void *data)
+{
+    for(int i=0; i<((gateway_config_t*)data)->data_cfg_size; i++)
+    {
+        switch (((gateway_config_t*)data)->data_cfg[i].modbus_datatype)
+        {
+            case MODBUS_DTYPE_OC:
+                break;
+            case MODBUS_DTYPE_DI:
+                break;
+            case MODBUS_DTYPE_IR:
+                break;
+            case MODBUS_DTYPE_HR:
+                printf("Reading Holding Register: %d\r\n", ((gateway_config_t*)data)->data_cfg[i].modbus_reg);
+                break;
+            case MODBUS_DTYPE_ERR:
+            default:
+                break;
+        }
+    }
 }

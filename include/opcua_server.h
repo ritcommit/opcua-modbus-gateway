@@ -14,7 +14,7 @@
 #include "config.h"
 
 void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg);
-void run_opcua_server(UA_Server *server);
+void run_opcua_server(UA_Server *server, gateway_config_t* gwy_cfg);
 void cleanup_opcua_server(UA_Server *server);
 UA_StatusCode add_variable_node(UA_Server *server,  data_config_t data_cfg);
 

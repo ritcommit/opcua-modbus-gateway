@@ -13,7 +13,7 @@
 #include <modbus/modbus.h>
 #include "config.h"
 
-modbus_t* init_modbus_client(gateway_config_t);
-void close_modbus_client(modbus_t* ctx);
+int init_modbus_client(gateway_config_t cfg);
+void close_modbus_client(void);
 
 #endif /*GWY_MODBUS_CLIENT_H*/

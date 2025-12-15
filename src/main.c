@@ -43,7 +43,7 @@ int main(void)
     }
 
     /* Run the OPC UA server */
-    run_opcua_server(server);
+    run_opcua_server(server, &config);
 
     /* Cleanup the OPC UA server */
     cleanup_opcua_server(server);

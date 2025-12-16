@@ -9,10 +9,12 @@
 #ifndef GWY_OPCUA_SERVER_H
 #define GWY_OPCUA_SERVER_H
 
+/*********************INCLUDES**********************/
 #include <open62541/server.h>
 #include <open62541/server_config_default.h>
 #include "config.h"
 
+/************GLOBAL FUNCTION PROTOTYPES*************/
 void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg);
 void run_opcua_server(UA_Server *server, gateway_config_t* gwy_cfg);
 void cleanup_opcua_server(UA_Server *server);

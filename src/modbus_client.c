@@ -63,3 +63,17 @@ void close_modbus_client(void)
         modbus_free(ctx);
     }
 }
+
+modbus_dtype_t parseMbDatatype(const char* dtype)
+{
+    if (strcmp(dtype, "HR") == 0) return MODBUS_DTYPE_HR;
+    if (strcmp(dtype, "IR") == 0) return MODBUS_DTYPE_IR;
+    if (strcmp(dtype, "DI") == 0) return MODBUS_DTYPE_DI;
+    if (strcmp(dtype, "OC") == 0) return MODBUS_DTYPE_OC;
+    return MODBUS_DTYPE_HR;
+}
+
+void mbclient_read_coils(void){}
+void mbclient_read_discrete_inputs(void){}
+void mbclient_read_input_registers(void){}
+void mbclient_read_holding_registers(void){}

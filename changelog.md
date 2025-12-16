@@ -9,3 +9,4 @@
 * Dynamic opcua node object creation using `config/config.json`
 
 **Changed** 
+* Config data structure changed for better parsing

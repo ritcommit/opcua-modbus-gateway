@@ -6,16 +6,21 @@
  * @Date: 31-10-2025
  * @Detail: modbus client
  */
+/*********************INCLUDES**********************/
 #include <stdio.h>
 #include <errno.h>
 #include "modbus_client.h"
 
+/**********************MACROS***********************/
 #define MODBUS_DATA_BITS 8
 #define MODBUS_STOP_BITS 1
 
-modbus_t* init_modbus_client(gateway_config_t cfg)
+/*****************LOCAL VARIABLES ******************/
+static modbus_t *ctx = NULL;
+
+/****************GLOBAL FUNCTIONS*******************/
+int init_modbus_client(gateway_config_t cfg)
 {
-    modbus_t *ctx = NULL;
     if (MODBUS_TYPE_RTU == cfg.modbus_type)
     {
         ctx = modbus_new_rtu(cfg.modbus_address, cfg.modbus_baudrate, cfg.modbus_parity, MODBUS_DATA_BITS, MODBUS_STOP_BITS);
@@ -24,32 +29,88 @@ modbus_t* init_modbus_client(gateway_config_t cfg)
     {
         ctx = modbus_new_tcp(cfg.modbus_address, cfg.modbus_port);
     }
+    else
+    {
+        fprintf(stderr, "Wrong modbus connection credentials\n");
+        return -1;
+    }
 
     if (ctx == NULL) {
         fprintf(stderr, "Unable to allocate libmodbus context\n");
-        return NULL;
+        return -2;
     }
 
     int res = modbus_set_slave(ctx, cfg.modbus_slaveid);
     if (res == -1) {
         fprintf(stderr, "Invalid slave ID\n");
         modbus_free(ctx);
-        return NULL;
+        return -3;
     }
 
     if (modbus_connect(ctx) == -1) {
         fprintf(stderr, "Connection failed: %s\n", modbus_strerror(errno));
         modbus_free(ctx);
-        return NULL;
+        return -4;
     }
 
-    return ctx;
+    return 0;
 }
 
-void close_modbus_client(modbus_t* ctx)
+void close_modbus_client(void)
 {
     if (ctx) {
         modbus_close(ctx);
         modbus_free(ctx);
+    }
+}
+
+modbus_dtype_t parseMbDatatype(const char* dtype)
+{
+    if (strcmp(dtype, "HR") == 0) return MODBUS_DTYPE_HR;
+    if (strcmp(dtype, "IR") == 0) return MODBUS_DTYPE_IR;
+    if (strcmp(dtype, "DI") == 0) return MODBUS_DTYPE_DI;
+    if (strcmp(dtype, "OC") == 0) return MODBUS_DTYPE_OC;
+    return MODBUS_DTYPE_HR;
+}
+
+int mbclient_read_output_coils(int addr, int nb, uint8_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_bits(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_discrete_inputs(int addr, int nb, uint8_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_input_bits(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_input_registers(int addr, int nb, uint16_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_input_registers(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_holding_registers(int addr, int nb, uint16_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_registers(ctx, addr, nb, dh);
+    }
+    else
+    {
+        static int counter = 0;
+        if (counter > 0xFFFFFFFF)
+        {
+            counter = 0;
+        }
+        *dh = counter++;
+        return nb;
     }
 }

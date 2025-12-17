@@ -1,34 +1,27 @@
 /**
  * Part of opcua-modbus-gateway project subjected to terms of
  * MIT license agreement. A license file is distributed with
- * the project. 
+ * the project.
  * @Author: Ritesh Sharma
  * @Date: 31-10-2025
  * @Detail: opcua server implementation
  */
+/*********************INCLUDES**********************/
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "config.h"
 #include "opcua_server.h"
+#include "modbus_client.h"
 
-typedef enum{
-    DTYPE_INT,
-    DTYPE_FLOAT,
-    DTYPE_MAX
-}dtype_t;
+/************TYPEDEFS, STRUCTS, ENUMS***************/
 
-const char dtype_str[DTYPE_MAX][12]= {
-    "int",
-    "float",
-};
+/*****************LOCAL VARIABLES*******************/
 
-typedef struct{
-    int i;
-    float f;
-} default_t;
+/************LOCAL FUNCTION PROTOTYPES**************/
+static void update_data(UA_Server *server, void *data);
 
-default_t df = {.i=42, .f=42.24f};
-
+/****************GLOBAL FUNCTIONS*******************/
 void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
 {
     /* Create a server listening on given port or 4840 (default) */
@@ -38,8 +31,14 @@ void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
     UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
 }
 
-void run_opcua_server(UA_Server *server)
+void run_opcua_server(UA_Server *server, gateway_config_t *gwy_cfg)
 {
+    UA_Server_addRepeatedCallback(
+        server,
+        update_data,
+        (void *)gwy_cfg,
+        gwy_cfg->polling_interval, // 1 second
+        NULL);
     /* Run the server (until ctrl-c interrupt) */
     UA_StatusCode status = UA_Server_runUntilInterrupt(server);
 }
@@ -50,89 +49,134 @@ void cleanup_opcua_server(UA_Server *server)
     UA_Server_delete(server);
 }
 
-static UA_NodeId parseNodeId(char *nodeidStr) {
+/* Function to add a node */
+UA_StatusCode add_variable_node(UA_Server *server,
+                                data_config_t data_cfg)
+{
+
+    /* Add Variable Attributes */
+    UA_VariableAttributes attr = UA_VariableAttributes_default;
+    attr.displayName = UA_LOCALIZEDTEXT("en-US", data_cfg.opcua_nodeid.identifier.string.data);
+    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
+
+    UA_Variant_setScalar(&attr.value, 0, &data_cfg.opcua_datatype);
+
+    UA_NodeId newNodeId = UA_NODEID_STRING(data_cfg.opcua_nodeid.namespaceIndex, data_cfg.opcua_nodeid.identifier.string.data);
+    UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
+    UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
+    UA_NodeId variableType = UA_NODEID_NULL;
+    UA_QualifiedName browseName = UA_QUALIFIEDNAME(data_cfg.opcua_nodeid.namespaceIndex, data_cfg.opcua_nodeid.identifier.string.data);
+
+    UA_StatusCode status = UA_Server_addVariableNode(
+        server,
+        data_cfg.opcua_nodeid, /* requested NodeId */
+        parentNodeId,          /* parent folder */
+        parentReferenceNodeId,
+        browseName,
+        variableType,
+        attr,
+        NULL, /* no context */
+        NULL  /* outNodeId (optional) */
+    );
+
+    if (status == UA_STATUSCODE_GOOD)
+    {
+        printf("Node added: [%s]<-->[%d]\n", data_cfg.opcua_nodeid.identifier.string.data, data_cfg.modbus_reg);
+    }
+
+    return status;
+}
+
+UA_NodeId parseNodeId(char *nodeidStr)
+{
     UA_NodeId nodeId;
     UA_StatusCode ret = UA_NodeId_parse(&nodeId, UA_STRING(nodeidStr));
-    if(ret != UA_STATUSCODE_GOOD) {
+    if (ret != UA_STATUSCODE_GOOD)
+    {
         printf("Error parsing NodeId string %s\n", nodeidStr);
         return UA_NODEID_NULL;
     }
     return nodeId;
 }
 
-void get_default_value(void** init_val, UA_DataType** ua_dtype, const char* cfg_dtype)
+UA_DataType parseUaType(const char *dtype)
 {
-    dtype_t dtype = DTYPE_INT;
-    while (dtype<DTYPE_MAX)
-    {
-        if (!strcmp(dtype_str[dtype], cfg_dtype))
-        {
-            break;
-        }
-        dtype += 1;
-    }
-
-    switch (dtype)
-    {
-        case DTYPE_INT:
-            *init_val = &df.i;
-            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
-            break; 
-        case DTYPE_FLOAT:
-            *init_val = &df.f;
-            *ua_dtype = &UA_TYPES[UA_TYPES_FLOAT];
-            break;  
-        case DTYPE_MAX:
-        default:
-            *init_val = &df.i;
-            *ua_dtype = &UA_TYPES[UA_TYPES_INT32];
-            break; 
-    }
+    if (strcmp(dtype, "int16") == 0)
+        return UA_TYPES[UA_TYPES_INT16];
+    if (strcmp(dtype, "int32") == 0)
+        return UA_TYPES[UA_TYPES_INT32];
+    if (strcmp(dtype, "int") == 0)
+        return UA_TYPES[UA_TYPES_INT32];
+    if (strcmp(dtype, "float") == 0)
+        return UA_TYPES[UA_TYPES_FLOAT];
+    if (strcmp(dtype, "bool") == 0)
+        return UA_TYPES[UA_TYPES_BOOLEAN];
+    return UA_TYPES[UA_TYPES_INT16];
 }
 
-/* Function to add a node */
-UA_StatusCode add_variable_node(UA_Server *server,
-                               data_config_t data_cfg) {
-
-    UA_NodeId nodeId = parseNodeId(data_cfg.opcua_nodeid);
-    if(UA_NodeId_isNull(&nodeId))
-        return UA_STATUSCODE_BADNODEIDINVALID;
-
-    /* Add Variable Attributes */
-    UA_VariableAttributes attr = UA_VariableAttributes_default;
-    attr.displayName = UA_LOCALIZEDTEXT("en-US", nodeId.identifier.string.data);
-    attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
-
-    // /* Default value for each type */
-    void* init_val = NULL;
-    UA_DataType* ua_dtype = NULL;
-    
-    get_default_value(&init_val, &ua_dtype, data_cfg.opcua_datatype);
-    
-    UA_Variant_setScalar(&attr.value, init_val, ua_dtype);
-
-    UA_NodeId newNodeId = UA_NODEID_STRING(nodeId.namespaceIndex, nodeId.identifier.string.data);
-    UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
-    UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
-    UA_NodeId variableType = UA_NODEID_NULL;
-    UA_QualifiedName browseName = UA_QUALIFIEDNAME(nodeId.namespaceIndex, nodeId.identifier.string.data);
-
-    UA_StatusCode status = UA_Server_addVariableNode(
-        server,
-        newNodeId,                 /* requested NodeId */
-        parentNodeId,             /* parent folder */
-        parentReferenceNodeId,
-        browseName,
-        variableType,
-        attr,
-        NULL,                   /* no context */
-        NULL                    /* outNodeId (optional) */
-    );
-
-    if(status == UA_STATUSCODE_GOOD)
+/*****************LOCAL FUNCTIONS*******************/
+static void update_data(UA_Server *server, void *gwy_cfg)
+{
+    for (int i = 0; i < ((gateway_config_t *)gwy_cfg)->data_cfg_size; i++)
     {
-        printf("Node added: %s (type: %s)\n", data_cfg.opcua_nodeid, data_cfg.opcua_datatype);
-    }
+        void* data_holder = NULL;
+        bool read_status = false;
+        switch (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datatype)
+        {
+        case MODBUS_DTYPE_OC:
+            data_holder = (uint8_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint8_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_output_coils(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint8_t*)data_holder))
+            {
+                read_status = true;
+            }
+            break;
+        case MODBUS_DTYPE_DI:
+            data_holder = (uint8_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint8_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_discrete_inputs(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint8_t*)data_holder))
+            {
+                read_status = true;
+            }
+            break;
+        case MODBUS_DTYPE_IR:
+            data_holder = (uint16_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint16_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_input_registers(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint16_t*)data_holder))
+            {
+                read_status = true;
+            }
+            break;
+        case MODBUS_DTYPE_HR:
+            data_holder = (uint16_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint16_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_holding_registers(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint16_t*)data_holder))
+            {
+                read_status = true;
+            }
+            break;
+        default:
+            break;
+        }
 
-    return status;
+        if (read_status == true)
+        {
+            UA_Variant myVar;
+            UA_Variant_init(&myVar);
+            UA_Variant_setScalar(&myVar, data_holder, &((gateway_config_t *)gwy_cfg)->data_cfg[i].opcua_datatype);
+            UA_Server_writeValue(server, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].opcua_nodeid, 
+                    myVar);
+        }
+
+        free(data_holder);
+    }
 }

@@ -9,6 +9,7 @@
 /*********************INCLUDES**********************/
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include "config.h"
 #include "opcua_server.h"
 #include "modbus_client.h"
@@ -36,7 +37,7 @@ void run_opcua_server(UA_Server *server, gateway_config_t *gwy_cfg)
         server,
         update_data,
         (void *)gwy_cfg,
-        1000, // 1 second
+        gwy_cfg->polling_interval, // 1 second
         NULL);
     /* Run the server (until ctrl-c interrupt) */
     UA_StatusCode status = UA_Server_runUntilInterrupt(server);
@@ -58,7 +59,7 @@ UA_StatusCode add_variable_node(UA_Server *server,
     attr.displayName = UA_LOCALIZEDTEXT("en-US", data_cfg.opcua_nodeid.identifier.string.data);
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
 
-    UA_Variant_setScalar(&attr.value, NULL, &data_cfg.opcua_datatype);
+    UA_Variant_setScalar(&attr.value, 0, &data_cfg.opcua_datatype);
 
     UA_NodeId newNodeId = UA_NODEID_STRING(data_cfg.opcua_nodeid.namespaceIndex, data_cfg.opcua_nodeid.identifier.string.data);
     UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
@@ -104,6 +105,8 @@ UA_DataType parseUaType(const char *dtype)
         return UA_TYPES[UA_TYPES_INT16];
     if (strcmp(dtype, "int32") == 0)
         return UA_TYPES[UA_TYPES_INT32];
+    if (strcmp(dtype, "int") == 0)
+        return UA_TYPES[UA_TYPES_INT32];
     if (strcmp(dtype, "float") == 0)
         return UA_TYPES[UA_TYPES_FLOAT];
     if (strcmp(dtype, "bool") == 0)
@@ -112,27 +115,68 @@ UA_DataType parseUaType(const char *dtype)
 }
 
 /*****************LOCAL FUNCTIONS*******************/
-static void update_data(UA_Server *server, void *data)
+static void update_data(UA_Server *server, void *gwy_cfg)
 {
-    for (int i = 0; i < ((gateway_config_t *)data)->data_cfg_size; i++)
+    for (int i = 0; i < ((gateway_config_t *)gwy_cfg)->data_cfg_size; i++)
     {
-        switch (((gateway_config_t *)data)->data_cfg[i].modbus_datatype)
+        void* data_holder = NULL;
+        bool read_status = false;
+        switch (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datatype)
         {
         case MODBUS_DTYPE_OC:
-            mbclient_read_coils();
+            data_holder = (uint8_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint8_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_output_coils(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint8_t*)data_holder))
+            {
+                read_status = true;
+            }
             break;
         case MODBUS_DTYPE_DI:
-            mbclient_read_discrete_inputs();
+            data_holder = (uint8_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint8_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_discrete_inputs(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint8_t*)data_holder))
+            {
+                read_status = true;
+            }
             break;
         case MODBUS_DTYPE_IR:
-            mbclient_read_input_registers();
+            data_holder = (uint16_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint16_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_input_registers(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint16_t*)data_holder))
+            {
+                read_status = true;
+            }
             break;
         case MODBUS_DTYPE_HR:
-            printf("Reading Holding Register: %d\r\n", ((gateway_config_t *)data)->data_cfg[i].modbus_reg);
-            mbclient_read_holding_registers();
+            data_holder = (uint16_t*)calloc((((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen),(sizeof(uint16_t)));
+            if (((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen == 
+                    mbclient_read_holding_registers(((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_reg, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].modbus_datalen, 
+                    (uint16_t*)data_holder))
+            {
+                read_status = true;
+            }
             break;
         default:
             break;
         }
+
+        if (read_status == true)
+        {
+            UA_Variant myVar;
+            UA_Variant_init(&myVar);
+            UA_Variant_setScalar(&myVar, data_holder, &((gateway_config_t *)gwy_cfg)->data_cfg[i].opcua_datatype);
+            UA_Server_writeValue(server, 
+                    ((gateway_config_t *)gwy_cfg)->data_cfg[i].opcua_nodeid, 
+                    myVar);
+        }
+
+        free(data_holder);
     }
 }

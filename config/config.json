@@ -15,7 +15,7 @@
         {
             "mb_register": 40001,
             "mb_dtype": "HR",
-            "mb_dlen": 4,
+            "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Temperature",
             "ua_dtype": "float",
             "scaling_factor": 0.1

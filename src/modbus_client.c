@@ -73,7 +73,44 @@ modbus_dtype_t parseMbDatatype(const char* dtype)
     return MODBUS_DTYPE_HR;
 }
 
-void mbclient_read_coils(void){}
-void mbclient_read_discrete_inputs(void){}
-void mbclient_read_input_registers(void){}
-void mbclient_read_holding_registers(void){}
+int mbclient_read_output_coils(int addr, int nb, uint8_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_bits(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_discrete_inputs(int addr, int nb, uint8_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_input_bits(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_input_registers(int addr, int nb, uint16_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_input_registers(ctx, addr, nb, dh);
+    }
+}
+
+int mbclient_read_holding_registers(int addr, int nb, uint16_t* dh)
+{
+    if (ctx != NULL)
+    {
+       return modbus_read_registers(ctx, addr, nb, dh);
+    }
+    else
+    {
+        static int counter = 0;
+        if (counter > 0xFFFFFFFF)
+        {
+            counter = 0;
+        }
+        *dh = counter++;
+        return nb;
+    }
+}

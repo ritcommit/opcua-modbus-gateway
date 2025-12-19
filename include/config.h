@@ -14,6 +14,10 @@
 #include <cjson/cJSON.h>
 #include <open62541/server.h>
 
+/*********************MACROS************************/
+#define UA_DESCRIPTION_SIZE_MAX         (128)
+#define UA_SECURITY_POLICY_SIZE_MAX     (64)
+#define MB_ADDRESS_SIZE_MAX             (128)
 /************TYPEDEFS, STRUCTS, ENUMS***************/
 typedef enum {
     MODBUS_TYPE_NONE=0,
@@ -26,6 +30,7 @@ typedef enum{
     MODBUS_DTYPE_DI,
     MODBUS_DTYPE_IR,
     MODBUS_DTYPE_HR,
+    MODBUS_DTYPE_MAX
 } modbus_dtype_t;
 
 typedef enum
@@ -49,8 +54,8 @@ typedef enum
     PARSE_ERROR_DATA_MB_DTYPE,        // 16
     PARSE_ERROR_DATA_MB_DLEN,         // 17
     PARSE_ERROR_DATA_UA_NODEID,       // 18
-    PARSE_ERROR_DATA_UA_DTYPE,        // 19
-    PARSE_ERROR_DATA_SCALE,           // 20
+    PARSE_ERROR_DATA_UA_DESCRIPTION,  // 19
+    PARSE_ERROR_DATA_UA_DTYPE,        // 20
 } parse_error_t;
 
 typedef struct
@@ -60,16 +65,16 @@ typedef struct
     int modbus_datalen;
     UA_NodeId opcua_nodeid;
     UA_DataType opcua_datatype;
-    float scalingfactor;
+    char opcua_description[UA_DESCRIPTION_SIZE_MAX];
 } data_config_t;
 
 typedef struct
 {
     int polling_interval;
     int opcua_port;
-    char opcua_securitypolicy[64];
+    char opcua_securitypolicy[UA_SECURITY_POLICY_SIZE_MAX];
     modbus_type_t modbus_type;
-    char modbus_address[128];
+    char modbus_address[MB_ADDRESS_SIZE_MAX];
     int modbus_port;
     int modbus_baudrate;
     char modbus_parity;
@@ -82,7 +87,7 @@ typedef struct
 void load_configuration(const char *filename, cJSON **config_json);
 parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *config);
 void free_configuration(cJSON *config_json);
-modbus_dtype_t parseMbDatatype(const char* dtype);
+modbus_dtype_t detectMbDatatype(int regaddr);
 UA_NodeId parseNodeId(char *nodeidStr);
 UA_DataType parseUaType(const char *dtype);
 

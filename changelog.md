@@ -10,6 +10,10 @@
 * Callback for reading modbus data and updating opc-ua node added
 * Modbus read methods using libmodbus api added
 * Keeping a dummy variable in holding register method for testing
+* Auto detection of modbus data type based on register address and exit if address out of range
 
 **Changed** 
 * Config data structure changed for better parsing
+* Removed mb datatype field from config
+* Removed scaling factor from config
+* Not setting ua node value during initialisation

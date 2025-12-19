@@ -14,35 +14,31 @@
     "data": [
         {
             "mb_register": 40001,
-            "mb_dtype": "HR",
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Temperature",
-            "ua_dtype": "float",
-            "scaling_factor": 0.1
+            "ua_description": "Random Temperature",
+            "ua_dtype": "float"
         },
         {
             "mb_register": 40008,
-            "mb_dtype": "HR",
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Pressure",
-            "ua_dtype": "int",
-            "scaling_factor": 1
+            "ua_description": "Pressure of the device",
+            "ua_dtype": "int"
         },
         {
             "mb_register": 40012,
-            "mb_dtype": "HR",
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Altitude",
-            "ua_dtype": "float",
-            "scaling_factor": 1
+            "ua_description": "Demo Altitude",
+            "ua_dtype": "float"
         },
         {
             "mb_register": 40024,
-            "mb_dtype": "HR",
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Count",
-            "ua_dtype": "int",
-            "scaling_factor": 1
+            "ua_description": "Incrementing count",
+            "ua_dtype": "int"
         }
     ]
 }

@@ -4,6 +4,7 @@
         "address": "/dev/ttyUSB0",
         "baudrate": 9600,
         "parity": "none",
+        "port": 502,
         "slave_id": 1
     },
     "opcua": {

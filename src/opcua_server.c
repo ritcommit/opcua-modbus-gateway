@@ -21,14 +21,19 @@ extern const int mb_start_addr[MODBUS_DTYPE_MAX];
 static void update_data(UA_Server *server, void *data);
 
 /****************GLOBAL FUNCTIONS*******************/
-void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
+int init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
 {
     /* Create a server listening on given port or 4840 (default) */
     *server = UA_Server_new();
+    if (NULL == server)
+    {
+        return -1;
+    }
     UA_ServerConfig *ua_server_config = UA_Server_getConfig(*server);
     UA_UInt16 port = (gwy_cfg.opcua_port != 0) ? gwy_cfg.opcua_port : 4840;
     UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
     printf("SUCCESS: OPCUA server created\r\n");
+    return 0;
 }
 
 void run_opcua_server(UA_Server *server, gateway_config_t *gwy_cfg)

@@ -36,11 +36,16 @@ int main(void)
     /* initialise modbus client */
     if (init_modbus_client(config) != 0)
     {
+        printf("FAIL: Modbus %s not created!\r\n", (MODBUS_TYPE_RTU == config.modbus_type)?"master":"client");
         return -1;
     }
 
     /* Initialize the OPC UA server */
-    init_opcua_server(&server, config);
+    if (init_opcua_server(&server, config) != 0)
+    {
+        printf("FAIL: OPCUA server not created!\r\n");
+        return -1;
+    }
 
     for (int i = 0; i < config.data_cfg_size; i++)
     {
@@ -49,6 +54,7 @@ int main(void)
         if (UA_STATUSCODE_GOOD != add_node_error)
         {
             printf("Failed to add UA node. ERROR [%d]\n", (int)add_node_error);
+            return -1;
         }
     }
 

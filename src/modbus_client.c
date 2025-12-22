@@ -56,6 +56,8 @@ int init_modbus_client(gateway_config_t cfg)
         return -4;
     }
 
+    printf("SUCCESS: Modbus %s created\r\n", (MODBUS_TYPE_RTU == cfg.modbus_type)?"slave":"client");
+
     return 0;
 }
 
@@ -104,7 +106,7 @@ int mbclient_read_holding_registers(int addr, int nb, uint16_t* dh)
 {
     if (ctx != NULL)
     {
-       return modbus_read_registers(ctx, addr, nb, dh);
+        return modbus_read_registers(ctx, addr, nb, dh);
     }
     else
     {

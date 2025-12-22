@@ -15,7 +15,8 @@ A lightweight, configurable gateway written in C that connects to Modbus RTU/TCP
 - [libmodbus](https://libmodbus.org/)
 - [open62541](https://open62541.org/)
 - [cJSON](https://github.com/DaveGamble/cJSON)
-- [UaExpert](https://www.unified-automation.com/products/development-tools/uaexpert.html) or similar OPC-UA client application for testing and demonstration
+- For testing OPCUA Client: [UaExpert](https://www.unified-automation.com/products/development-tools/uaexpert.html)
+- For testing Modbus Slave Simulator: [OpenModsim](https://github.com/sanny32/OpenModSim)
 
 ### Build
 ```bash
@@ -27,6 +28,8 @@ make
 ```
 
 ### Use
+* Connect modbus slave device or modbus slave simulator
+* Change `config/config.json` as per your utility
 * Start application `./uamb_gateway`
 * Start `UaExpert` and click on `+ ` to add server
 * Using `opc.tcp://<your IP or machine name or localhost>:4841` and Endpointurl connect to the server

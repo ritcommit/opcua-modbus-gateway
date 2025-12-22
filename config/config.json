@@ -20,21 +20,21 @@
             "ua_dtype": "float"
         },
         {
-            "mb_register": 40008,
+            "mb_register": 40003,
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Pressure",
             "ua_description": "Pressure of the device",
             "ua_dtype": "int"
         },
         {
-            "mb_register": 40012,
+            "mb_register": 40011,
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Altitude",
             "ua_description": "Demo Altitude",
             "ua_dtype": "float"
         },
         {
-            "mb_register": 40024,
+            "mb_register": 40013,
             "mb_dlen": 2,
             "ua_nodeid": "ns=1;s=Count",
             "ua_description": "Incrementing count",

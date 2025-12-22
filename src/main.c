@@ -9,6 +9,7 @@
 /*********************INCLUDES**********************/
 #include <stdio.h>
 #include "opcua_server.h"
+#include "modbus_client.h"
 #include "config.h"
 
 /******************MAIN FUNCTION*******************/
@@ -29,6 +30,12 @@ int main(void)
     {
         printf("Failed to parse configuration. ERROR [%d]\n", (int)parse_error);
         free_configuration(config_json);
+        return -1;
+    }
+
+    /* initialise modbus client */
+    if (init_modbus_client(config) != 0)
+    {
         return -1;
     }
 

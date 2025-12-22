@@ -28,6 +28,7 @@ void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
     UA_ServerConfig *ua_server_config = UA_Server_getConfig(*server);
     UA_UInt16 port = (gwy_cfg.opcua_port != 0) ? gwy_cfg.opcua_port : 4840;
     UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
+    printf("SUCCESS: OPCUA server created\r\n");
 }
 
 void run_opcua_server(UA_Server *server, gateway_config_t *gwy_cfg)

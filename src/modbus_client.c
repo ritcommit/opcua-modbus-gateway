@@ -18,6 +18,9 @@
 /*****************LOCAL VARIABLES ******************/
 static modbus_t *ctx = NULL;
 
+/*****************GLOBAL VARIABLES******************/
+const int mb_start_addr[MODBUS_DTYPE_MAX] = {1, 10001, 30001, 40001};
+
 /****************GLOBAL FUNCTIONS*******************/
 int init_modbus_client(gateway_config_t cfg)
 {
@@ -53,6 +56,8 @@ int init_modbus_client(gateway_config_t cfg)
         return -4;
     }
 
+    printf("SUCCESS: Modbus %s created\r\n", (MODBUS_TYPE_RTU == cfg.modbus_type)?"master":"client");
+
     return 0;
 }
 
@@ -64,13 +69,13 @@ void close_modbus_client(void)
     }
 }
 
-modbus_dtype_t parseMbDatatype(const char* dtype)
+modbus_dtype_t detectMbDatatype(int regaddr)
 {
-    if (strcmp(dtype, "HR") == 0) return MODBUS_DTYPE_HR;
-    if (strcmp(dtype, "IR") == 0) return MODBUS_DTYPE_IR;
-    if (strcmp(dtype, "DI") == 0) return MODBUS_DTYPE_DI;
-    if (strcmp(dtype, "OC") == 0) return MODBUS_DTYPE_OC;
-    return MODBUS_DTYPE_HR;
+    if ((regaddr >= 1) && (regaddr <= 9999)) return MODBUS_DTYPE_OC;
+    if ((regaddr >= 10001) && (regaddr <= 19999)) return MODBUS_DTYPE_DI;
+    if ((regaddr >= 30001) && (regaddr <= 39999)) return MODBUS_DTYPE_IR;
+    if ((regaddr >= 40001) && (regaddr <= 49999)) return MODBUS_DTYPE_HR;
+    return MODBUS_DTYPE_MAX;
 }
 
 int mbclient_read_output_coils(int addr, int nb, uint8_t* dh)
@@ -101,16 +106,6 @@ int mbclient_read_holding_registers(int addr, int nb, uint16_t* dh)
 {
     if (ctx != NULL)
     {
-       return modbus_read_registers(ctx, addr, nb, dh);
-    }
-    else
-    {
-        static int counter = 0;
-        if (counter > 0xFFFFFFFF)
-        {
-            counter = 0;
-        }
-        *dh = counter++;
-        return nb;
+        return modbus_read_registers(ctx, addr, nb, dh);
     }
 }

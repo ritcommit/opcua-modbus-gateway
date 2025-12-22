@@ -14,21 +14,26 @@
 #include "opcua_server.h"
 #include "modbus_client.h"
 
-/************TYPEDEFS, STRUCTS, ENUMS***************/
-
-/*****************LOCAL VARIABLES*******************/
+/*****************GLOBAL VARIABLES******************/
+extern const int mb_start_addr[MODBUS_DTYPE_MAX];
 
 /************LOCAL FUNCTION PROTOTYPES**************/
 static void update_data(UA_Server *server, void *data);
 
 /****************GLOBAL FUNCTIONS*******************/
-void init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
+int init_opcua_server(UA_Server **server, gateway_config_t gwy_cfg)
 {
     /* Create a server listening on given port or 4840 (default) */
     *server = UA_Server_new();
+    if (NULL == server)
+    {
+        return -1;
+    }
     UA_ServerConfig *ua_server_config = UA_Server_getConfig(*server);
     UA_UInt16 port = (gwy_cfg.opcua_port != 0) ? gwy_cfg.opcua_port : 4840;
     UA_ServerConfig_setMinimal(ua_server_config, port, NULL); /* default port */
+    printf("SUCCESS: OPCUA server created\r\n");
+    return 0;
 }
 
 void run_opcua_server(UA_Server *server, gateway_config_t *gwy_cfg)
@@ -56,11 +61,12 @@ UA_StatusCode add_variable_node(UA_Server *server,
 
     /* Add Variable Attributes */
     UA_VariableAttributes attr = UA_VariableAttributes_default;
+    
     attr.displayName = UA_LOCALIZEDTEXT("en-US", data_cfg.opcua_nodeid.identifier.string.data);
+    attr.description = UA_LOCALIZEDTEXT("en-US", data_cfg.opcua_description);
+    attr.dataType = data_cfg.opcua_datatype.typeId;
     attr.accessLevel = UA_ACCESSLEVELMASK_READ | UA_ACCESSLEVELMASK_WRITE;
-
-    UA_Variant_setScalar(&attr.value, 0, &data_cfg.opcua_datatype);
-
+    
     UA_NodeId newNodeId = UA_NODEID_STRING(data_cfg.opcua_nodeid.namespaceIndex, data_cfg.opcua_nodeid.identifier.string.data);
     UA_NodeId parentNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_OBJECTSFOLDER);
     UA_NodeId parentReferenceNodeId = UA_NODEID_NUMERIC(0, UA_NS0ID_ORGANIZES);
@@ -81,7 +87,7 @@ UA_StatusCode add_variable_node(UA_Server *server,
 
     if (status == UA_STATUSCODE_GOOD)
     {
-        printf("Node added: [%s]<-->[%d]\n", data_cfg.opcua_nodeid.identifier.string.data, data_cfg.modbus_reg);
+        printf("Node added: [%s]<-->[%d]\n", data_cfg.opcua_nodeid.identifier.string.data, data_cfg.modbus_reg+mb_start_addr[data_cfg.modbus_datatype]);
     }
 
     return status;

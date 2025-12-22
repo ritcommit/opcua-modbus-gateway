@@ -16,6 +16,7 @@
 
 /*****************GLOBAL VARIABLES******************/
 data_config_t *gwy_data = NULL;
+extern const int mb_start_addr[MODBUS_DTYPE_MAX];
 
 /****************GLOBAL FUNCTIONS*******************/
 void load_configuration(const char *filename, cJSON **config_json)
@@ -72,7 +73,7 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
         }
         if (cJSON_IsString(security_policy) && (security_policy->valuestring != NULL))
         {
-            strcpy(cfg->opcua_securitypolicy, security_policy->valuestring);
+            strncpy(cfg->opcua_securitypolicy, security_policy->valuestring, UA_SECURITY_POLICY_SIZE_MAX);
         }
         else
         {
@@ -151,7 +152,7 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
         }
         if (cJSON_IsString(address) && (address->valuestring != NULL))
         {
-            strcpy(cfg->modbus_address, address->valuestring);
+            strncpy(cfg->modbus_address, address->valuestring, MB_ADDRESS_SIZE_MAX);
         }
         else
         {
@@ -197,28 +198,24 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
         cJSON_ArrayForEach(data_config, data_configs)
         {
             cJSON *mb_addr = cJSON_GetObjectItemCaseSensitive(data_config, "mb_register");
-            cJSON *mb_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dtype");
             cJSON *mb_dlen = cJSON_GetObjectItemCaseSensitive(data_config, "mb_dlen");
             cJSON *ua_nodeid = cJSON_GetObjectItemCaseSensitive(data_config, "ua_nodeid");
+            cJSON *ua_description = cJSON_GetObjectItemCaseSensitive(data_config, "ua_description");
             cJSON *ua_dtype = cJSON_GetObjectItemCaseSensitive(data_config, "ua_dtype");
-            cJSON *d_scale = cJSON_GetObjectItemCaseSensitive(data_config, "scaling_factor");
 
             if (cJSON_IsNumber(mb_addr))
             {
-                gwy_data[index].modbus_reg = mb_addr->valueint;
+                gwy_data[index].modbus_datatype = detectMbDatatype(mb_addr->valueint);
+                if (MODBUS_DTYPE_MAX == gwy_data[index].modbus_datatype)
+                {
+                    error = PARSE_ERROR_DATA_MB_DTYPE;
+                    break;
+                }
+                gwy_data[index].modbus_reg = mb_addr->valueint - mb_start_addr[gwy_data[index].modbus_datatype];
             }
             else
             {
                 error = PARSE_ERROR_DATA_MB_ADDR;
-                break;
-            }
-            if (cJSON_IsString(mb_dtype) && mb_dtype->valuestring != NULL)
-            {
-                gwy_data[index].modbus_datatype = parseMbDatatype(mb_dtype->valuestring);
-            }
-            else
-            {
-                error = PARSE_ERROR_DATA_MB_DTYPE;
                 break;
             }
             if (cJSON_IsNumber(mb_dlen))
@@ -230,13 +227,22 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
                 error = PARSE_ERROR_DATA_MB_DLEN;
                 break;
             }
-            if (cJSON_IsString(ua_nodeid) && ua_nodeid->valuestring != NULL)
+            if (cJSON_IsString(ua_nodeid) && (ua_nodeid->valuestring != NULL))
             {
                 gwy_data[index].opcua_nodeid = parseNodeId(ua_nodeid->valuestring);
             }
             else
             {
                 error = PARSE_ERROR_DATA_UA_NODEID;
+                break;
+            }
+            if (cJSON_IsString(ua_description) && (ua_description->valuestring != NULL))
+            {
+                strncpy(gwy_data[index].opcua_description, ua_description->valuestring, UA_DESCRIPTION_SIZE_MAX);
+            }
+            else
+            {
+                error = PARSE_ERROR_DATA_UA_DESCRIPTION;
                 break;
             }
             if (cJSON_IsString(ua_dtype) && ua_dtype->valuestring != NULL)
@@ -246,15 +252,6 @@ parse_error_t parse_configuration(cJSON *config_json, gateway_config_t *cfg)
             else
             {
                 error = PARSE_ERROR_DATA_UA_DTYPE;
-                break;
-            }
-            if (cJSON_IsNumber(d_scale))
-            {
-                gwy_data[index].scalingfactor = d_scale->valuedouble;
-            }
-            else
-            {
-                error = PARSE_ERROR_DATA_SCALE;
                 break;
             }
             index++;

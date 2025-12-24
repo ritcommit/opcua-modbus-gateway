@@ -1,6 +1,6 @@
 # Changelog #
 
-## [Unreleased](#) ##
+## [v1.0.0](https://github.com/ritcommit/opcua-modbus-gateway/releases/tag/v1.0.0) ##
 
 **Added** 
 
@@ -9,7 +9,6 @@
 * Dynamic opcua node object creation using `config/config.json`
 * Callback for reading modbus data and updating opc-ua node added
 * Modbus read methods using libmodbus api added
-* Keeping a dummy variable in holding register method for testing
 * Auto detection of modbus data type based on register address and exit if address out of range
 * Tested with modbus slave simulator [OpenModSim](https://github.com/sanny32/OpenModSim)
 

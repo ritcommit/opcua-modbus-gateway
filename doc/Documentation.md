@@ -122,6 +122,24 @@ make
 sudo make install
 ```
 
-## 7. Future Enhancements
+### OpenModSim
+#### Installation Steps
 
+* Visit [openmodsim release page](https://github.com/sanny32/OpenModSim/releases)
+* Install release binaries according to your OS architecture
+
+### opcua-client-gui
+#### Installation Steps
+
+* Install using python package manager. Python required.
+
+```sh
+pip3 install opcua-client
+# run from cli with command
+opcua-client
+```
+
+## 7. Future Enhancements
+1. Multiple modbus slave connection
+2. Adding security policy to opcua for secure connection
 

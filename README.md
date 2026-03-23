@@ -30,7 +30,7 @@ make
 
 ### Use
 * Connect modbus slave device or start modbus slave simulator `openmodsim`.
-* Change `config/config.json`.
+* Change `config/config.json` manually ro use `config_generator.py` python UI for generating new `config.json` file
 * If using a simulator with RS485 bridge or actual modbus rtu device change `modbus->type` to `"rtu"`
 * Change `modbus->address` to `"com port address"`.
 * If using simulator in tcp mode change `modbus->type` to `"tcp"`.

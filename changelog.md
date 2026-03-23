@@ -1,5 +1,11 @@
 # Changelog #
 
+## [Unreleased](#) ##
+
+**Added**
+
+* [config_generator.py](config_generator.py) a python UI for generating [config.json](config/config.json)
+
 ## [v1.0.0](https://github.com/ritcommit/opcua-modbus-gateway/releases/tag/v1.0.0) ##
 
 **Added** 

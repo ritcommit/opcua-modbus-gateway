@@ -49,18 +49,17 @@ This project aims to develop a lightweight cross-platform OPC-UA Modbus Gateway 
 opcua-modbus-gateway/
 ├── CMakeLists.txt
 ├── README.md
+├── config_generator.py # config.json generator UI
 ├── include/
-│   ├── gateway_config.h       # Config parsing structures
+│   ├── config.h       # Config parsing structures
 │   ├── opcua_server.h         # OPC UA server logic
 │   ├── modbus_client.h        # Modbus RTU/TCP handling
-│   ├── data_mapper.h          # Mapping Modbus <-> OPC UA nodes
 │   └── utils.h                # Logging, helpers
 ├── src/
 │   ├── main.c                 # Entry point
-│   ├── gateway_config.c
+│   ├── config.c
 │   ├── opcua_server.c
 │   ├── modbus_client.c
-│   ├── data_mapper.c
 │   └── utils.c
 ├── config/
 │   └── config.json           # Example Modbus <-> OPC UA mapping 
@@ -122,6 +121,42 @@ make
 sudo make install
 ```
 
-## 7. Future Enhancements
+### OpenModSim
+#### Installation Steps
 
+* Visit [openmodsim release page](https://github.com/sanny32/OpenModSim/releases)
+* Install release binaries according to your OS architecture
+
+### opcua-client-gui
+#### Installation Steps
+
+* Install using python package manager. Python required.
+
+```sh
+pip3 install opcua-client
+# run from cli with command
+opcua-client
+```
+
+### config_generator.py
+
+* run python script to open UI
+
+```sh
+python3 config_generator.py
+```
+
+* Opens up a UI
+* Fill the respective customisation fields and click on `Save` button to save new configuration
+* Click `Add Row` button to add new data points
+* Overwrites the original `config\config.json` file
+* New config file can be reviewed before saving by clicking on `Preview JSON` button
+
+<p align="center">
+<img src="../resource/config_generator.png" width="500">
+</p>
+
+## 7. Future Enhancements
+1. Multiple modbus slave connection
+2. Adding security policy to opcua for secure connection
 

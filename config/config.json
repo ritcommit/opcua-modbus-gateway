@@ -1,7 +1,7 @@
 {
     "modbus": {
-        "type": "rtu",
-        "address": "/dev/ttyUSB0",
+        "type": "tcp",
+        "address": "192.168.0.10",
         "baudrate": 9600,
         "parity": "none",
         "port": 502,
@@ -16,30 +16,149 @@
         {
             "mb_register": 40001,
             "mb_dlen": 2,
-            "ua_nodeid": "ns=1;s=Temperature",
-            "ua_description": "Random Temperature",
+            "ua_nodeid": "ns=1;s=CellVoltage",
+            "ua_description": "Cell Terminal Voltage",
             "ua_dtype": "float"
         },
         {
             "mb_register": 40003,
             "mb_dlen": 2,
-            "ua_nodeid": "ns=1;s=Pressure",
-            "ua_description": "Pressure of the device",
-            "ua_dtype": "int"
+            "ua_nodeid": "ns=1;s=MotorCurrent",
+            "ua_description": "Fan Motor Current Draw",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40005,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=FanSpeed",
+            "ua_description": "Exhaust Fan Speed ",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40007,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=DiffPressure",
+            "ua_description": "Filter Differential Pressure",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40009,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=SpotDiameter",
+            "ua_description": "Beam Spot Diameter",
+            "ua_dtype": "float"
         },
         {
             "mb_register": 40011,
             "mb_dlen": 2,
-            "ua_nodeid": "ns=1;s=Altitude",
-            "ua_description": "Demo Altitude",
+            "ua_nodeid": "ns=1;s=PosOffset",
+            "ua_description": "Focal Position Offset ",
             "ua_dtype": "float"
         },
         {
             "mb_register": 40013,
             "mb_dlen": 2,
-            "ua_nodeid": "ns=1;s=Count",
-            "ua_description": "Incrementing count",
-            "ua_dtype": "int"
+            "ua_nodeid": "ns=1;s=LsrHeadTemp",
+            "ua_description": "Laser Head Temperature",
+            "ua_dtype": "int16"
+        },
+        {
+            "mb_register": 40015,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=LsrOutPower",
+            "ua_description": "Laser Output Power ",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40017,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=WeldPenDepth",
+            "ua_description": "Weld Penetration Depth",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40019,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=FlowRate",
+            "ua_description": "Shield Gas Flow Rate",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40021,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=EventCount",
+            "ua_description": " Spatter Event Count",
+            "ua_dtype": "int32"
+        },
+        {
+            "mb_register": 40023,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=WeldSpeed",
+            "ua_description": "Welding Travel Speed",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40025,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=WeldCycTime",
+            "ua_description": "Weld Cycle Time",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40027,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=QScore",
+            "ua_description": " Overall Quality Score",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40029,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=WeldStrength",
+            "ua_description": "Estimated Weld Strength",
+            "ua_dtype": "int32"
+        },
+        {
+            "mb_register": 40031,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=AmbCellTemp",
+            "ua_description": "Ambient Cell Temperature",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40033,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=CellSurfTemp",
+            "ua_description": "Cell Surface Temperature",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40035,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=ChillrInTemp",
+            "ua_description": "Chiller Water Inlet Temperature",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40037,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=ChillrOutTemp",
+            "ua_description": "Chiller Water Outlet Temperatu",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40039,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=DuctTemp",
+            "ua_description": "Exhaust Duct Temperature",
+            "ua_dtype": "float"
+        },
+        {
+            "mb_register": 40041,
+            "mb_dlen": 2,
+            "ua_nodeid": "ns=1;s=WeldSurfTemp",
+            "ua_description": " Weld Zone Surface Temperature",
+            "ua_dtype": "float"
         }
     ]
 }
